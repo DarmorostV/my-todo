@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
+import { ModalController, NavController } from 'ionic-angular';
 import {ToDoService} from '../app/services/ToDoService';
 import { NavController } from 'ionic-angular';
+import {Http} from '@angular/http';
 
 @Component({
   selector: 'page-home',
@@ -9,42 +11,46 @@ import { NavController } from 'ionic-angular';
 })
 export class HomePage {
 
-  items = [
-     { 
-        title: "Лекція з КППЗ"
-     }, 
-     { 
-        title: "Практична з КППЗ"
-     }, 
-  ]
+  items = [ ]
 
-  constructor(public navCtrl: NavController, private todoService: ToDoService) {
-    todoService.getAll().subscribe(
-                data => {
-                    this.items = data.results; 
-                    console.log(data);
-                },
-                err => {
-                    console.log(err);
-                },
-                () => console.log('Todo Search Complete')
-            );
-  }
+  constructor(public navCtrl: NavController, public modalCtrl: ModalController, public http: Http) {
+	  this.http.get('/api/values').map(res => res.json()).subscribe(data => {
+      this.items = data;
+	});
+	
+    
+}
+ionViewDidLoad(){
 
+}
 
   addItem() {
-    console.log("addItem");
-    this.items.push(
-		{ 
-        title: "beliberda"
-      } 
-    )
+      let addModal = this.modalCtrl.create(AddItemPage);
+ 
+    addModal.onDidDismiss((item) => {
+ 
+          if(item){
+            this.saveItem(item);
+          }
+ 
+    });
+ 
+    addModal.present();
+ 
   }
+ 
+  saveItem(item){
+    this.items.push(item);
+  }
+ 
+viewItem(item){
+  this.navCtrl.push(ItemDetailPage, {
+    item: item
+  });
+}
 
   delete(item) {
     console.log("delete item " + item.title);
     this.items.splice(this.items.indexOf(item), 1);
   }
 }
-
-
